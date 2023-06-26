@@ -1,7 +1,7 @@
 package main
 
-type Stubby struct {
-	Stubby    string            `yaml:"stubby"`
+type Snap struct {
+	Snap    string            `yaml:"snap"`
 	Info      Info              `yaml:"info"`
 	Namespace string            `yaml:"namespace"`
 	Objects   map[string]Object `yaml:"objects"`

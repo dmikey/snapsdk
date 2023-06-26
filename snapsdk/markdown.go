@@ -8,13 +8,13 @@ import (
 type MarkdownGenerator struct{}
 
 func (MarkdownGenerator) Name() string { return "md" }
-func (m MarkdownGenerator) Generate(stubby Stubby) (string, error) {
+func (m MarkdownGenerator) Generate(snap Snap) (string, error) {
 	var output strings.Builder
 
-	fmt.Fprintf(&output, "# %s\n\n", stubby.Info.Title)
+	fmt.Fprintf(&output, "# %s\n\n", snap.Info.Title)
 
 	// Generate Definitions
-	for objName, obj := range stubby.Objects {
+	for objName, obj := range snap.Objects {
 		fmt.Fprintf(&output, "## Object: %s\n", objName)
 		if def, ok := obj.Definitions["Dog"]; ok {
 			fmt.Fprintf(&output, "### Definitions\n")
@@ -41,6 +41,22 @@ func (m MarkdownGenerator) Generate(stubby Stubby) (string, error) {
 				fmt.Fprintf(&output, "- Parameters: %s\n", strings.Join(params, ", "))
 			}
 
+			// Generate usage examples for each language.
+			fmt.Fprintf(&output, "- Usage Examples:\n")
+			for lang, _ := range method.Receiver {
+				// Generate the method call example
+				switch lang {
+				case "go":
+					fmt.Fprintf(&output, "  - Go: `%s.%s(%s)`\n", strings.Title(objName), strings.Title(name), strings.Join(params, ", "))
+				case "python":
+					fmt.Fprintf(&output, "  - Python: `%s.%s(%s)`\n", objName, name, strings.Join(params, ", "))
+				case "javascript":
+					fmt.Fprintf(&output, "  - JavaScript: `%s.%s(%s)`\n", objName, name, strings.Join(params, ", "))
+				case "rust":
+					fmt.Fprintf(&output, "  - Rust: `%s::%s(%s)`\n", objName, name, strings.Join(params, ", "))
+				}
+			}
+
 			// Handle return type if any
 			if method.ReturnType != nil {
 				// Check if the ReturnType is a Ref to a definition
@@ -55,7 +71,7 @@ func (m MarkdownGenerator) Generate(stubby Stubby) (string, error) {
 		fmt.Fprintf(&output, "\n")
 	}
 
-	fmt.Fprintf(&output, "##### Generated with Stubby version: %s\n", stubby.Stubby)
+	fmt.Fprintf(&output, "##### Generated with Snap version: %s\n", snap.Snap)
 
 	return output.String(), nil
 }
