@@ -10,7 +10,7 @@ build:
 # Target: test
 test:
 	mkdir -p test
-	./build/snapsdk -o test ./test.yaml '*'
+	./build/snapsdk -o example ./example/dogs.yaml '*'
 
 # Target: main_wasm
 main_wasm:
