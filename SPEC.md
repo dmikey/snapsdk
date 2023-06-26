@@ -1,14 +1,14 @@
-Stubby Specification Draft 1.0.0
+SnapSDK Specification Draft 1.0.0
 ================================
 
-This is the `Stubby` spec. The intent is to eventually propose these draft changes to Open API.
+This is the `SnapSDK` spec. The intent is to eventually propose these draft changes to Open API.
 
-This draft proposes a new Stubby specification. Stubby provides a common structure for defining the interface of SDKs and libraries, focusing on simplicity and ease of use for developers.
+This draft proposes a new SnapSDK specification. SnapSDK provides a common structure for defining the interface of SDKs and libraries, focusing on simplicity and ease of use for developers.
 
 Structure
 ---------
 
-A Stubby document consists of several sections, including info, namespace, objects, methods, and definitions.
+A SnapSDK document consists of several sections, including info, namespace, objects, methods, and definitions.
 
 Info
 ----
@@ -75,7 +75,7 @@ Each data type can have properties, which is a dictionary of property names to p
 Types
 -----
 
-Types in Stubby should be defined to have a clear mapping to the basic data types in JavaScript, Rust, Go, and Python.
+Types in SnapSDK should be defined to have a clear mapping to the basic data types in JavaScript, Rust, Go, and Python.
 
 *   `string`: Maps to string in JavaScript and Go, str in Python, and String in Rust.
 *   `integer`: Maps to number in JavaScript, int in Python and Go, and i32 or i64 in Rust.
@@ -86,7 +86,7 @@ Types in Stubby should be defined to have a clear mapping to the basic data type
 Example
 -------
 
-Here is an example of a Stubby specification:
+Here is an example of a SnapSDK specification:
 
 ```yaml
     info:
