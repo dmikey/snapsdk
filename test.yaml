@@ -1,0 +1,47 @@
+stubby: '1.0'
+info:
+  version: 1.0.0
+  title: DogsApp SDK
+namespace: DogsAppSDK
+objects:
+  dog:
+    methods:
+      listDogs:
+        operationId: listDogs
+        summary: Returns a list of dogs.
+        description: Returns a list of dogs in the system.
+        returnType:
+          type: array
+          items:
+            $ref: '#/definitions/Dog'
+        receiver:
+          go: DogsAppReceiver.ListDogs
+          python: dogsapp_receiver.list_dogs
+          javascript: dogsAppReceiver.listDogs
+          rust: 'dogsapp_receiver::list_dogs'
+      getDog:
+        operationId: getDog
+        summary: Returns a dog by ID.
+        description: Returns detailed information about a dog with the given ID.
+        parameters:
+          - name: id
+            type: integer
+        returnType:
+          $ref: '#/definitions/Dog'
+        receiver:
+          go: DogsAppReceiver.GetDog
+          python: dogsapp_receiver.get_dog
+          javascript: dogsAppReceiver.getDog
+          rust: 'dogsapp_receiver::get_dog'
+    definitions:
+      Dog:
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+          breed:
+            type: string
+          age:
+            type: integer

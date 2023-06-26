@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>SDK</title>
+    <!-- Add Bootstrap CSS from CDN -->
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <!-- Add Google Code Prettify for syntax highlighting -->
+    <script src="https://cdn.jsdelivr.net/gh/google/code-prettify@master/loader/run_prettify.js"></script>
+    <!-- Add jQuery from CDN -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Add Ace Editor -->
+    <script
+      src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.23.0/ace.min.js"
+      crossorigin="anonymous"
+      referrerpolicy="no-referrer"
+    ></script>
+    <script type="module" src="https://md-block.verou.me/md-block.js"></script>
+    <script src="wasm_exec.js"></script>
+    <style>
+      .centered-menu {
+        display: flex;
+        justify-content: center;
+        padding: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <ul class="nav nav-tabs">
+        <li class="nav-item">
+          <a class="nav-link active" data-toggle="tab" href="#yamlTab">YAML</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#mdTab">Docs</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#goTab">Go</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#jsTab">JavaScript</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#pyTab">Python</a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" data-toggle="tab" href="#rsTab">Rust</a>
+        </li>
+      </ul>
+
+      <!-- Tab panes -->
+      <div class="tab-content" style="padding-top: 10px">
+        <!-- YAML Tab -->
+        <div class="tab-pane container active" id="yamlTab">
+          <div id="yamlEditor" style="height: 400px"></div>
+          <button
+            onclick="generateSDK()"
+            class="btn btn-primary"
+            style="margin-top: 10px; float: right"
+          >
+            Generate
+          </button>
+        </div>
+
+        <!-- Markdown Tab -->
+        <div class="tab-pane container" id="mdTab"></div>
+
+        <!-- Go Tab -->
+        <div class="tab-pane container" id="goTab">
+          <pre class="prettyprint lang-go" id="goCodeInput"></pre>
+        </div>
+
+        <!-- JavaScript Tab -->
+        <div class="tab-pane container" id="jsTab">
+          <pre class="prettyprint lang-js" id="jsCodeInput"></pre>
+        </div>
+
+        <!-- Python Tab -->
+        <div class="tab-pane container" id="pyTab">
+          <pre class="prettyprint lang-py" id="pyCodeInput"></pre>
+        </div>
+
+        <!-- Rust Tab -->
+        <div class="tab-pane container" id="rsTab">
+          <pre class="prettyprint lang-rs" id="rsCodeInput"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- Add Bootstrap JS from CDN -->
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+    <script>
+      let go = new Go();
+      let yamlEditor;
+
+      (async () => {
+        const wasmFile = "build/snapsdk.wasm";
+
+        WebAssembly.instantiateStreaming(fetch(wasmFile), {
+          env: {},
+          wasi_snapshot_preview1: {},
+          ...go.importObject,
+        }).then((result) => {
+          go.run(result.instance);
+        });
+
+        // Load Ace Editor
+        await new Promise((resolve, reject) => {
+          const script = document.createElement("script");
+          script.src =
+            "https://cdnjs.cloudflare.com/ajax/libs/ace/1.23.0/ace.min.js";
+          script.crossOrigin = "anonymous";
+          script.referrerPolicy = "no-referrer";
+          script.onload = resolve;
+          script.onerror = reject;
+          document.body.appendChild(script);
+        });
+
+        // Initialize YAML Editor
+        yamlEditor = ace.edit("yamlEditor");
+        // yamlEditor.setTheme("ace/theme/monokai");
+        yamlEditor.setShowPrintMargin(false);
+        yamlEditor.session.setMode("ace/mode/yaml");
+      })();
+
+      async function generateSDK() {
+        const yamlInput = yamlEditor.getValue();
+
+        const result = await generateAll(yamlInput);
+
+        if (result.startsWith("Error")) {
+          console.error(result);
+          $("#sourceCode").text("Error occurred while generating SDK.");
+        } else {
+          const languages = JSON.parse(result);
+
+          // Display code in respective language tabs
+          displayCode("md", languages.md);
+          displayCode("go", languages.go);
+          displayCode("js", languages.js);
+          displayCode("py", languages.py);
+          displayCode("rs", languages.rs);
+        }
+      }
+
+      function displayCode(language, code) {
+        const containerElement = document.getElementById(language + "Tab");
+        containerElement.innerHTML = ""; // Clear the container before appending the code
+
+        if (language === "md") {
+          const mdBlockElement = document.createElement("md-block");
+          mdBlockElement.textContent = code;
+          containerElement.appendChild(mdBlockElement);
+        } else {
+          const preElement = document.createElement("pre");
+          preElement.textContent = code;
+          preElement.classList.add("prettyprint");
+
+          // Determine the language class based on the language
+          let langClass = "";
+          switch (language) {
+            case "go":
+              langClass = "lang-go";
+              break;
+            case "js":
+              langClass = "lang-js";
+              break;
+            case "py":
+              langClass = "lang-py";
+              break;
+            case "rs":
+              langClass = "lang-rs";
+              break;
+            default:
+              langClass = "lang-html";
+              break;
+          }
+
+          preElement.classList.add(langClass);
+          containerElement.appendChild(preElement);
+        }
+
+        PR.prettyPrint();
+      }
+
+      async function generateAll(yamlInput) {
+        return new Promise((resolve) => {
+          go.argv.push(yamlInput);
+
+          go.importObject.env.generateAll = function (yamlPtr) {
+            const yamlString = go.loadString(yamlPtr);
+            const args = [yamlString];
+
+            const resultPtr = go.runSlice(args, go._malloc, go._free);
+
+            const result = go.loadString(resultPtr);
+            go._free(resultPtr);
+
+            resolve(result);
+          };
+
+          runWASM();
+        });
+      }
+    </script>
+    <div style="width: 100%; clear: both"></div>
+  </body>
+</html>
