@@ -3,6 +3,13 @@ info:
   version: 1.0.0
   title: DogsApp SDK
 namespace: DogsAppSDK
+mcp:
+  enabled: true
+  transport: stdio
+  description: A tool for managing dog data in the system
+  receiver:
+    type: http
+    url: http://localhost:8080/api
 objects:
   dog:
     methods:
@@ -26,6 +33,7 @@ objects:
         parameters:
           - name: id
             type: integer
+            description: The unique identifier for the dog
         returnType:
           $ref: '#/definitions/Dog'
         receiver:

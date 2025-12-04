@@ -1,5 +1,7 @@
 # SnapSDK
 
+> ⚠️ **Early Development** - This project is not production ready. APIs and features may change significantly.
+
 **Experience the next level of SDK generation with SnapSDK!** Think of it as "Apollo for SDKs" — a schema-first approach to generating type-safe, multi-language SDK libraries from a single specification file.
 
 SnapSDK provides a streamlined process for generating SDK Stub Files across multiple languages, using a spec format inspired by OpenAPI but optimized for library/SDK development rather than HTTP APIs.
@@ -11,6 +13,7 @@ SnapSDK provides a streamlined process for generating SDK Stub Files across mult
 - **Receiver Pattern**: Map generated methods to concrete implementations (similar to GraphQL resolvers), keeping your business logic decoupled from the generated interface
 - **Auto-Generated Documentation**: Markdown docs generated directly from your specification
 - **Multi-Language Support**: JavaScript, Python, Rust, and Go from a single YAML spec
+- **Built-in MCP Server**: Expose your SDK as an MCP server for AI agent integration
 
 ## Usage
 
@@ -20,9 +23,12 @@ Getting started with SnapSDK:
 2. Clone the repository: `git clone https://github.com/dmikey/snapsdk.git`
 3. Navigate to the snapsdk directory: `cd snapsdk/snapsdk`
 4. Build the binary: `go build -o snapsdk`
-5. Run snapsdk: `./snapsdk -o <output_dir> <spec_file> <language>`
 
-### Arguments
+### Generate SDKs
+
+```bash
+./snapsdk -o <output_dir> <spec_file> <language>
+```
 
 | Argument | Description |
 |----------|-------------|
@@ -42,6 +48,56 @@ Getting started with SnapSDK:
 # Generate Python SDK to current directory
 ./snapsdk spec.yaml py
 ```
+
+### MCP Server Mode
+
+SnapSDK can run as an MCP (Model Context Protocol) server, allowing AI agents to discover and call your SDK methods as tools.
+
+```bash
+./snapsdk serve <spec_file>
+```
+
+This starts an MCP server on stdio that:
+- Exposes each SDK method as an MCP tool
+- Forwards tool calls to your HTTP receiver
+- Returns results back to the AI agent
+
+#### Architecture
+
+```
+┌─────────────┐     ┌─────────────────────┐     ┌─────────────────┐
+│  AI Agent   │────▶│  snapsdk serve      │────▶│  Your Receiver  │
+│  (Claude)   │stdio│  (MCP protocol)     │http │  (any language) │
+└─────────────┘     └─────────────────────┘     └─────────────────┘
+```
+
+#### MCP Configuration
+
+Add an `mcp` section to your spec:
+
+```yaml
+mcp:
+  enabled: true
+  transport: stdio
+  description: A tool for managing dog data
+  receiver:
+    type: http
+    url: http://localhost:8080/api
+```
+
+#### Running with MCP
+
+1. Start your receiver (implements the actual SDK logic):
+```bash
+node receiver.js  # or python receiver.py, etc.
+```
+
+2. Start the MCP server:
+```bash
+./snapsdk serve spec.yaml
+```
+
+3. Connect your AI agent to the MCP server via stdio
 
 ## Specification File
 

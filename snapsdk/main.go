@@ -10,6 +10,34 @@ import (
 )
 
 func main() {
+	// Check for subcommands first
+	if len(os.Args) > 1 && os.Args[1] == "serve" {
+		serveCmd := flag.NewFlagSet("serve", flag.ExitOnError)
+		serveCmd.Parse(os.Args[2:])
+
+		if serveCmd.NArg() < 1 {
+			fmt.Println("Usage: snapsdk serve <spec_file>")
+			os.Exit(1)
+		}
+
+		specFile := serveCmd.Arg(0)
+		snap, err := loadSpec(specFile)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+
+		// Start MCP server
+		server := NewMCPServer(snap)
+		fmt.Fprintln(os.Stderr, "Starting MCP server for", snap.Namespace)
+		if err := server.Serve(); err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
+		return
+	}
+
+	// Original generate command
 	// Define the flag.
 	outputDir := flag.String("o", ".", "Output directory")
 
@@ -18,22 +46,14 @@ func main() {
 
 	// Use flag.Args() to get non-flag arguments.
 	if len(flag.Args()) < 2 {
-		fmt.Println("Usage: ./snapsdk <spec_file> <language> [-o <output_dir>]")
+		fmt.Println("Usage: snapsdk [-o <output_dir>] <spec_file> <language>")
+		fmt.Println("       snapsdk serve <spec_file>")
 		os.Exit(1)
 	}
 	specFile := flag.Arg(0)
 	language := flag.Arg(1)
 
-	// Read the input file.
-	data, err := ioutil.ReadFile(specFile)
-	if err != nil {
-		fmt.Println(err)
-		os.Exit(1)
-	}
-
-	// Unmarshal the YAML to our Snap struct.
-	var snap Snap
-	err = yaml.Unmarshal(data, &snap)
+	snap, err := loadSpec(specFile)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
@@ -65,6 +85,21 @@ func main() {
 			os.Exit(1)
 		}
 	}
+}
+
+func loadSpec(specFile string) (Snap, error) {
+	data, err := ioutil.ReadFile(specFile)
+	if err != nil {
+		return Snap{}, err
+	}
+
+	var snap Snap
+	err = yaml.Unmarshal(data, &snap)
+	if err != nil {
+		return Snap{}, err
+	}
+
+	return snap, nil
 }
 
 func generateForLanguage(generator Generator, dir string, snap Snap) {

@@ -4,10 +4,10 @@
 pub mod dogsappsdk {
 	#[derive(Debug)]
 	pub struct Dog {
+		pub breed: String,
 		pub age: i32,
 		pub id: i32,
 		pub name: String,
-		pub breed: String,
 	}
 
 	/// Returns a list of dogs in the system.

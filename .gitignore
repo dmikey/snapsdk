@@ -1,3 +1,4 @@
 build/
 test/
 wasm_exec.js
+snapsdk

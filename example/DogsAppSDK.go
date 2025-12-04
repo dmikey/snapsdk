@@ -2,19 +2,19 @@
 package dogsappsdk
 
 type Dog struct {
-	Id int
-	Name string
 	Breed string
 	Age int
-}
-
-// Returns detailed information about a dog with the given ID.
-func (o *Dog) GetDog(id int) (Dog, error) {
-	return o.DogsAppReceiver.GetDog(id)
+	Id int
+	Name string
 }
 
 // Returns a list of dogs in the system.
 func (o *Dog) ListDogs() ([]Dog, error) {
 	return o.DogsAppReceiver.ListDogs()
+}
+
+// Returns detailed information about a dog with the given ID.
+func (o *Dog) GetDog(id int) (Dog, error) {
+	return o.DogsAppReceiver.GetDog(id)
 }
 

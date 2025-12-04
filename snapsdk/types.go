@@ -1,16 +1,30 @@
 package main
 
 type Snap struct {
-	Snap    string            `yaml:"snap"`
+	Snap      string            `yaml:"snap"`
 	Info      Info              `yaml:"info"`
 	Namespace string            `yaml:"namespace"`
 	Objects   map[string]Object `yaml:"objects"`
 	Defs      map[string]Def    `yaml:"definitions"`
+	MCP       *MCPConfig        `yaml:"mcp,omitempty"`
 }
 
 type Info struct {
 	Version string `yaml:"version"`
 	Title   string `yaml:"title"`
+}
+
+type MCPConfig struct {
+	Enabled     bool        `yaml:"enabled"`
+	Transport   string      `yaml:"transport,omitempty"` // stdio, sse
+	Description string      `yaml:"description,omitempty"`
+	Receiver    MCPReceiver `yaml:"receiver,omitempty"`
+}
+
+type MCPReceiver struct {
+	Type string `yaml:"type"` // http, command
+	URL  string `yaml:"url,omitempty"`
+	Cmd  string `yaml:"cmd,omitempty"`
 }
 
 type Object struct {
@@ -28,9 +42,11 @@ type Method struct {
 }
 
 type Parameter struct {
-	Name string `yaml:"name"`
-	Type string `yaml:"type"`
-	Ref  string `yaml:"$ref"` // Add Ref for referencing definitions
+	Name        string `yaml:"name"`
+	Type        string `yaml:"type"`
+	Ref         string `yaml:"$ref"`       // Add Ref for referencing definitions
+	Description string `yaml:"description,omitempty"`
+	Required    bool   `yaml:"required,omitempty"`
 }
 
 type ReturnType struct {
