@@ -2,8 +2,16 @@
 
 #[allow(dead_code)]
 pub mod dogsappsdk {
+	#[derive(Debug)]
+	pub struct Dog {
+		pub age: i32,
+		pub id: i32,
+		pub name: String,
+		pub breed: String,
+	}
+
 	/// Returns a list of dogs in the system.
-	pub fn listdogs(&self, ) {
+	pub fn listdogs(&self, ) -> Result<Vec<Dog>, Error> {
 		self.dogsapp_receiver::list_dogs()
 	}
 

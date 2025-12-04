@@ -35,7 +35,7 @@ Objects and Methods
 
 objects is a dictionary that provides a layer of abstraction for methods of the SDK or library. Each object can contain various methods.
 
-methods is a dictionary that describes the functions provided by the SDK or library. Each method is an object that can contain various properties, such as operationId, summary, description, parameters, and returnType.
+methods is a dictionary that describes the functions provided by the SDK or library. Each method is an object that can contain various properties, such as operationId, summary, description, parameters, returnType, and receiver.
 
 ```yaml
     objects:
@@ -50,11 +50,18 @@ methods is a dictionary that describes the functions provided by the SDK or libr
                 type: parameterType
             returnType:
               type: returnType
+            receiver:
+              go: Receiver.MethodName
+              python: receiver.method_name
+              javascript: receiver.methodName
+              rust: receiver::method_name
 ``` 
 
 Each method's parameters is an array of parameters that the method accepts. Each parameter has a name and a type.
 
 The returnType of a method describes the type of value that the method returns. It has a type property and, for complex types, an items property that refers to a definition.
+
+The receiver property maps the method to a specific implementation in the target language. This allows the generated SDK to delegate execution to a concrete implementation (the "Receiver"), separating the interface definition from the logic.
 
 Definitions
 -----------

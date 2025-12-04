@@ -15,8 +15,19 @@ func (r RustGenerator) Generate(snap Snap) (string, error) {
 	fmt.Fprintf(&output, "#[allow(dead_code)]\n")
 	fmt.Fprintf(&output, "pub mod %s {\n", strings.ToLower(snap.Namespace))
 
-	// Generate struct definitions.
+	// Collect all definitions (root-level and object-scoped)
+	allDefs := make(map[string]Def)
 	for name, def := range snap.Defs {
+		allDefs[name] = def
+	}
+	for _, obj := range snap.Objects {
+		for name, def := range obj.Definitions {
+			allDefs[name] = def
+		}
+	}
+
+	// Generate struct definitions.
+	for name, def := range allDefs {
 		fmt.Fprintf(&output, "\t#[derive(Debug)]\n")
 		fmt.Fprintf(&output, "\tpub struct %s {\n", name)
 		for propName, prop := range def.Properties {
@@ -42,9 +53,26 @@ func (r RustGenerator) Generate(snap Snap) (string, error) {
 
 			// Write the method signature and doc comment.
 			fmt.Fprintf(&output, "\t/// %s\n", method.Description)
-			if method.ReturnType != nil && method.ReturnType.Ref != "" {
-				refName := strings.Split(method.ReturnType.Ref, "/")[2] // Assuming '$ref' is like '#/definitions/User'
-				fmt.Fprintf(&output, "\tpub fn %s(&self, %s) -> Result<%s, Error> {\n", strings.ToLower(name), strings.Join(params, ", "), refName)
+
+			returnTypeStr := ""
+			if method.ReturnType != nil {
+				if method.ReturnType.Ref != "" {
+					returnTypeStr = strings.Split(method.ReturnType.Ref, "/")[2]
+				} else if method.ReturnType.Type == "array" && method.ReturnType.Items != nil {
+					if method.ReturnType.Items.Ref != "" {
+						innerType := strings.Split(method.ReturnType.Items.Ref, "/")[2]
+						returnTypeStr = fmt.Sprintf("Vec<%s>", innerType)
+					}
+				} else {
+					// Primitive return
+					if method.ReturnType.Type != "" {
+						returnTypeStr = r.mapType(method.ReturnType.Type)
+					}
+				}
+			}
+
+			if returnTypeStr != "" {
+				fmt.Fprintf(&output, "\tpub fn %s(&self, %s) -> Result<%s, Error> {\n", strings.ToLower(name), strings.Join(params, ", "), returnTypeStr)
 			} else {
 				fmt.Fprintf(&output, "\tpub fn %s(&self, %s) {\n", strings.ToLower(name), strings.Join(params, ", "))
 			}

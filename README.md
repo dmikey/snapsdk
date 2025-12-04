@@ -1,50 +1,123 @@
 # SnapSDK
 
-**Experience the next level of SDK generation with SnapSDK!** This interactive introspection spec is not just another tool, but a revolution in the way SDKs are created. Providing a streamlined, intuitive process for generating Stub Files for a wide range of languages, SnapSDK takes the lead by adopting a spec closely resembling the OpenAPI Spec.
+**Experience the next level of SDK generation with SnapSDK!** Think of it as "Apollo for SDKs" — a schema-first approach to generating type-safe, multi-language SDK libraries from a single specification file.
 
-Why stop at SDK creation? SnapSDK also offers generation of Markdown Docs straight from your Specification File! No more time-consuming documentation process - create, implement, and share with ease.
+SnapSDK provides a streamlined process for generating SDK Stub Files across multiple languages, using a spec format inspired by OpenAPI but optimized for library/SDK development rather than HTTP APIs.
 
-SnapSDK boasts a unique feature - it accepts \`recievers\` which are mapped to \`Namespace.Method\` calls. The arguments and returns are cross-mapped, allowing you to regenerate new SDK definitions while keeping your implementation code intact. This degree of flexibility and control is what makes SnapSDK a standout.
+## Key Features
+
+- **Schema-First Development**: Define your SDK interface once, generate implementations for all supported languages
+- **Type-Safe Code Generation**: Full support for primitives, arrays, and custom object types with proper language-specific mappings
+- **Receiver Pattern**: Map generated methods to concrete implementations (similar to GraphQL resolvers), keeping your business logic decoupled from the generated interface
+- **Auto-Generated Documentation**: Markdown docs generated directly from your specification
+- **Multi-Language Support**: JavaScript, Python, Rust, and Go from a single YAML spec
 
 ## Usage
 
-Getting started with SnapSDK is as simple as 1, 2, 3, 4, 5!
+Getting started with SnapSDK:
 
-1.  Ensure you have Go installed on your system.
-2.  Clone the snapsdk repository: `git clone https://github.com/your-username/snapsdk.git`
-3.  Navigate to the snapsdk directory: `cd snapsdk`
-4.  Build the snapsdk binary: `go build -o snapsdk`
-5.  Run snapsdk by providing the necessary arguments: `./snapsdk <spec_file> <language> [-o <output_dir>]`
+1. Ensure you have Go installed on your system
+2. Clone the repository: `git clone https://github.com/dmikey/snapsdk.git`
+3. Navigate to the snapsdk directory: `cd snapsdk/snapsdk`
+4. Build the binary: `go build -o snapsdk`
+5. Run snapsdk: `./snapsdk -o <output_dir> <spec_file> <language>`
 
-**<spec_file>**: The path to the specification file in YAML format.
+### Arguments
 
-**<language>**: The target language for generating the SDK. Use "\*" to generate SDKs for all supported languages.
+| Argument | Description |
+|----------|-------------|
+| `-o <output_dir>` | Output directory for generated files (default: current directory) |
+| `<spec_file>` | Path to the YAML specification file |
+| `<language>` | Target language: `js`, `py`, `rs`, `go`, or `*` for all |
 
-**\[-o <output_dir>\]** (optional): The output directory for the generated SDK files. Defaults to the current directory.
+### Examples
 
-Example usage: `./snapsdk spec.yaml go -o sdk/go`
+```bash
+# Generate all SDKs to the sdk/ directory
+./snapsdk -o sdk/ spec.yaml "*"
 
-This command generates the Go SDK based on the \`spec.yaml\` specification file and places the generated files in the \`sdk/go\` directory.
+# Generate only the Go SDK
+./snapsdk -o sdk/go spec.yaml go
+
+# Generate Python SDK to current directory
+./snapsdk spec.yaml py
+```
 
 ## Specification File
 
-With SnapSDK, your specification file is your canvas. Provide it in YAML format and let SnapSDK take care of the rest. The file should adhere to the SnapSDK specification schema, defining the structure and details of the API for which the SDKs will be generated. Dive deeper into the specification schema in [SPEC.md](SPEC.md).
+Define your SDK interface in YAML format following the SnapSDK schema. See [SPEC.md](SPEC.md) for the complete specification.
 
-SnapSDK supports a broad spectrum of primitive data types and special types for defining the structure and data types of the API endpoints and models within the specification file. Discover the power of customization with our unique support for custom receiver specifications. With SnapSDK, you get to design receiver methods for your generated stubs, decoupling the generator map for the SDK from your actual SDK implementation.
+### Example Specification
+
+```yaml
+snap: '1.0'
+info:
+  version: 1.0.0
+  title: DogsApp SDK
+namespace: DogsAppSDK
+objects:
+  dog:
+    methods:
+      getDog:
+        operationId: getDog
+        summary: Returns a dog by ID.
+        description: Returns detailed information about a dog.
+        parameters:
+          - name: id
+            type: integer
+        returnType:
+          $ref: '#/definitions/Dog'
+        receiver:
+          go: DogsAppReceiver.GetDog
+          python: dogsapp_receiver.get_dog
+          javascript: dogsAppReceiver.getDog
+          rust: 'dogsapp_receiver::get_dog'
+    definitions:
+      Dog:
+        type: object
+        properties:
+          id:
+            type: integer
+          name:
+            type: string
+```
+
+### Type Mappings
+
+| SnapSDK Type | JavaScript | Python | Go | Rust |
+|--------------|------------|--------|-----|------|
+| `string` | `string` | `str` | `string` | `String` |
+| `integer` | `number` | `int` | `int` | `i32` |
+| `boolean` | `boolean` | `bool` | `bool` | `bool` |
+| `number` | `number` | `float` | `float64` | `f64` |
+| `array` | `Array` | `list` | `[]T` | `Vec<T>` |
+| `object` | `Object` | `dict` | `struct` | `struct` |
 
 ## Supported Languages
 
-SnapSDK is a polyglot's delight! We currently support generating SDKs for a variety of programming languages:
+- **JavaScript** (`js`) - ES6 classes with CommonJS exports
+- **Python** (`py`) - Classes with type hints ready
+- **Rust** (`rs`) - Modules with structs and impl blocks
+- **Go** (`go`) - Structs with receiver methods
 
-- JavaScript (js)
-- Python (py)
-- Rust (rs)
-- Go (go)
+## The Receiver Pattern
+
+Similar to how Apollo GraphQL uses resolvers, SnapSDK uses **receivers** to map generated SDK methods to your actual implementation:
+
+```yaml
+receiver:
+  go: MyReceiver.DoSomething
+  python: my_receiver.do_something
+  javascript: myReceiver.doSomething
+  rust: 'my_receiver::do_something'
+```
+
+This allows you to regenerate SDK definitions without losing your implementation code.
 
 ## Contributing
 
-We believe in the power of collective growth. Contributions to SnapSDK are always welcome! If you encounter any issues or have suggestions for improvements, don't hesitate to open an issue on the GitHub repository. Together, we can make SnapSDK better.
+Contributions are welcome! Open an issue or submit a PR on the [GitHub repository](https://github.com/dmikey/snapsdk).
 
 ## License
 
-Freedom is fundamental to development. This project is licensed under the MIT License, empowering you to innovate and create with SnapSDK
+This project is licensed under the MIT License.

@@ -12,10 +12,10 @@
 - Summary: Returns a list of dogs.
 - Description: Returns a list of dogs in the system.
 - Usage Examples:
+  - Go: `Dog.ListDogs()`
   - Python: `dog.listDogs()`
   - JavaScript: `dog.listDogs()`
   - Rust: `dog::listDogs()`
-  - Go: `Dog.ListDogs()`
 - Returns: array
 
 #### getDog
@@ -23,10 +23,10 @@
 - Description: Returns detailed information about a dog with the given ID.
 - Parameters: id (integer)
 - Usage Examples:
+  - Go: `Dog.GetDog(id (integer))`
   - Python: `dog.getDog(id (integer))`
   - JavaScript: `dog.getDog(id (integer))`
   - Rust: `dog::getDog(id (integer))`
-  - Go: `Dog.GetDog(id (integer))`
 - Returns: Dog
 
 
