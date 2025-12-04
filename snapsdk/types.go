@@ -44,7 +44,7 @@ type Method struct {
 type Parameter struct {
 	Name        string `yaml:"name"`
 	Type        string `yaml:"type"`
-	Ref         string `yaml:"$ref"`       // Add Ref for referencing definitions
+	Ref         string `yaml:"$ref"` // Add Ref for referencing definitions
 	Description string `yaml:"description,omitempty"`
 	Required    bool   `yaml:"required,omitempty"`
 }
