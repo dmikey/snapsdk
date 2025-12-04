@@ -99,6 +99,49 @@ node receiver.js  # or python receiver.py, etc.
 
 3. Connect your AI agent to the MCP server via stdio
 
+## Observability
+
+SnapSDK includes built-in observability with OpenTelemetry tracing and Prometheus metrics.
+
+### Configuration
+
+Add an `observability` section to your MCP config:
+
+```yaml
+mcp:
+  enabled: true
+  receiver:
+    type: http
+    url: http://localhost:8080/api
+  observability:
+    enabled: true
+    service_name: my-sdk
+    prometheus_port: 9090        # Exposes /metrics endpoint
+    otlp_endpoint: localhost:4317  # OTel collector endpoint
+```
+
+### Metrics
+
+When enabled, SnapSDK exposes these Prometheus metrics at `http://localhost:<prometheus_port>/metrics`:
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `snapsdk_tool_calls_total` | Counter | Total tool calls by tool name and status |
+| `snapsdk_tool_duration_seconds` | Histogram | Tool call latency |
+| `snapsdk_tool_errors_total` | Counter | Failed tool calls |
+| `snapsdk_receiver_latency_seconds` | Histogram | HTTP receiver response time |
+
+### Tracing
+
+When `otlp_endpoint` is configured, SnapSDK sends traces to your OTel collector:
+
+```
+snapsdk.tool.get_dog
+├── receiver.http.post
+│   └── duration: 45ms
+└── status: ok
+```
+
 ## Specification File
 
 Define your SDK interface in YAML format following the SnapSDK schema. See [SPEC.md](SPEC.md) for the complete specification.

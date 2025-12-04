@@ -28,7 +28,11 @@ func main() {
 		}
 
 		// Start MCP server
-		server := NewMCPServer(snap)
+		server, err := NewMCPServer(snap)
+		if err != nil {
+			fmt.Println(err)
+			os.Exit(1)
+		}
 		fmt.Fprintln(os.Stderr, "Starting MCP server for", snap.Namespace)
 		if err := server.Serve(); err != nil {
 			fmt.Println(err)

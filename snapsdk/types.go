@@ -15,16 +15,24 @@ type Info struct {
 }
 
 type MCPConfig struct {
-	Enabled     bool        `yaml:"enabled"`
-	Transport   string      `yaml:"transport,omitempty"` // stdio, sse
-	Description string      `yaml:"description,omitempty"`
-	Receiver    MCPReceiver `yaml:"receiver,omitempty"`
+	Enabled       bool                 `yaml:"enabled"`
+	Transport     string               `yaml:"transport,omitempty"` // stdio, sse
+	Description   string               `yaml:"description,omitempty"`
+	Receiver      MCPReceiver          `yaml:"receiver,omitempty"`
+	Observability *ObservabilityConfig `yaml:"observability,omitempty"`
 }
 
 type MCPReceiver struct {
 	Type string `yaml:"type"` // http, command
 	URL  string `yaml:"url,omitempty"`
 	Cmd  string `yaml:"cmd,omitempty"`
+}
+
+type ObservabilityConfig struct {
+	Enabled        bool   `yaml:"enabled"`
+	ServiceName    string `yaml:"service_name,omitempty"`
+	OTLPEndpoint   string `yaml:"otlp_endpoint,omitempty"`   // e.g., localhost:4317
+	PrometheusPort int    `yaml:"prometheus_port,omitempty"` // e.g., 9090
 }
 
 type Object struct {

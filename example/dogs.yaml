@@ -10,6 +10,11 @@ mcp:
   receiver:
     type: http
     url: http://localhost:8080/api
+  observability:
+    enabled: true
+    service_name: dogsapp-sdk
+    prometheus_port: 9090
+    # otlp_endpoint: localhost:4317  # Uncomment for OTel tracing
 objects:
   dog:
     methods:
